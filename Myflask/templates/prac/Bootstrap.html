@@ -18,7 +18,7 @@
 
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <a class="navbar-brand" href="/">Home</a>
-        <a class="navbar-brand" href="https://learnonline.gmit.ie/">Learnonline</a>
+        <a class="navbar-brand" href="/homepage">Learnonline</a>
         <a class="navbar-brand" href="https://outlook.office365.com/mail">Outlook</a>
         <a class="navbar-brand" href="https://timetable.gmit.ie/">Timetable</a>
 
@@ -132,7 +132,7 @@
             url: '/data_deliver',
             dataType: 'json',
             success: function (data) {
-                for (let i = 0; i < data.length; i++) {
+                for (let i = data.length-1; i >= 0; i--) {
                     console.log(data[1]);
                     $('#sec').append('<tr>' +
                         '<th></th>' +

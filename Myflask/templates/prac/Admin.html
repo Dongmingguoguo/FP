@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
           integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 
+
     <title>GMIT-Forum</title>
 </head>
 
@@ -25,7 +26,8 @@
         <div class="collapse navbar-collapse" id="navbar Supported Content">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item">
-                    <p class="float-left" style="margin-top: 13px">Welcome, {{userID}}</p>
+                    <p class="float-left" style="margin-top: 13px">Welcome, {{userID}}<button><a
+                            href="/logout">Logout</a> </button></p>
 
                 </li>
             </ul>
@@ -45,16 +47,18 @@
                 <div class="offset-xl-2 col-xl-8">
                     <!-- Bootstrap Table-->
                     <div class="table-responsive clearfix">
-                        <table class="table table-striped">
+                        <table id="user_info" class="table table-striped">
                             <tr>
-                                <th>Full Name</th>
                                 <th>Name</th>
                                 <th>Password</th>
                                 <th>E-mail</th>
                                 <th>Button</th>
                             </tr>
                         </table>
+                        <ul id="ty_paging"></ul>
+
                     </div>
+
                 </div>
             </div>
         </div>
@@ -85,30 +89,80 @@
         crossorigin="anonymous "></script>
 <script src="../../static/js/core.min.js"></script>
 <script src="../../static/js/script.js"></script>
+<link rel="stylesheet" href="../../static/css/ty_paging.css">
+<script src="../../static/js/ty_paging.js"></script>
 
 <script type=text/javascript>
     $(window).ready(function () {
         $.ajax({
             type: 'GET',
-            url: '/data_deliver',
+            url: '/admin_data',
             dataType: 'json',
             success: function (data) {
-                for (let i = 0; i < data.length; i++) {
-                    console.log(data[1]);
-                    $('#sec').append('<tr>' +
-                        '<th></th>' +
-                        '<th class="text-regular text-dark big" >' + '<a href="' + data[i][4] + '">' + data[i][0] + '</a>' + '</th>' +
-                        '<th class="text-regular text-dark big">' + data[i][2] + '</th>' +
+                var index_post = data.length;
+                var pages = index_post / 4
+                ty_dealPaging(pages, function (currentPage) {
+                    //定义2个参数记录网页上展示的起点和终点页数
+                    var startIndex = 1,             //起始分页数
+                    endIndex = maxPage;         //结束分页数
+                    //此处要分几种情况处理：
+                    for (var i = 0; i <= data.length; ++i) {
+                    $('#user_info').append('<tr>' +
+                        '<th class="text-regular text-dark big"  >'  + data[i][0] + '</a>' + '</th>' +
                         '<th class="text-regular text-dark big">' + data[i][1] + '</th>' +
-                        '<th class="text-regular text-dark big">10</th>' +
-                        '<th class="text-regular text-dark big">Yes</th>' +
-                        '<th class="text-regular text-dark big">' + data[i][3] + '</th>'
-                        + '</tr>');
+                        '<th class="text-regular text-dark big">' + data[i][1] + '</th>' +
+                         '<th>'+'<button onclick="flask(this)">Remove</button>' + '</th>'+
+                        '</tr>');
+                    }
+
+                    if (maxPage <= onePageMaxCount) {//一页能显示下分页数量
+                        startIndex = 1;
+                        endIndex = maxPage;
+                    }
+                    else {
+                        if (ty_currentPage <= Math.ceil(onePageMaxCount/2)) {
+                            startIndex = 1;
+                            endIndex = onePageMaxCount;
+                        } else {
+                            //起始、终点位置逻辑推导
+                            startIndex = ty_currentPage - (Math.ceil(onePageMaxCount/2)-1);
+                            endIndex = ty_currentPage + (Math.ceil(onePageMaxCount/2)-1);
+                            if (endIndex > maxPage) {
+                                endIndex = maxPage;
+                                startIndex = maxPage - (onePageMaxCount-1);
+                            }
+                        }
+                    }
+                });
+                for (var i = 0; i <= data.length; ++i) {
+                    $('#user_info').append('<tr>' +
+                        '<th class="text-regular text-dark big"  >'  + data[i][0] + '</a>' + '</th>' +
+                        '<th class="text-regular text-dark big">' + data[i][1] + '</th>' +
+                        '<th class="text-regular text-dark big">' + data[i][1] + '</th>' +
+                         '<th>'+'<button onclick="flask(this)">Remove</button>' + '</th>'+
+                        '</tr>');
                 }
             }
         })
     });
+
+    function flask(object) {
+        var index = object.parentNode.parentNode;
+        var tbody = index.parentNode;
+        var del_obj = index.firstChild.innerHTML;
+        var del_o = JSON.stringify(del_obj, null, '\t')
+        tbody.removeChild(index);
+        $.ajax({
+            type: 'POST',
+            url: '/remove',
+            contentType: 'application/json;charset=UTF-8',
+            data: del_o,
+        });
+    }
+
+
 </script>
+
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 </body>
 </html>

@@ -2,6 +2,7 @@ from werkzeug.utils import secure_filename
 from flask import Flask, render_template, jsonify, request, make_response, send_from_directory, redirect
 from Myflask.strUtil import Pic_str
 from Myflask.dbconnection import User
+from Myflask.admindbconn import Admin_User
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from Myflask.postdbconnection import User2
@@ -25,15 +26,13 @@ loadsource = session.query(User2.title, User2.name, User2.depart, User2.time).al
 load_len = len(loadsource)
 
 
-def acquire_name(data):
-    title = data
-    return title
-
+@app.route('/')
+def login2():
+    return render_template('/login.html')
 
 
 @app.route('/homepage')
 def beigin():
-
     return render_template('prac/Bootstrap.html')
 
 @app.route('/nihao')
@@ -48,6 +47,19 @@ def temp_prod():
     return render_template('prac/justry.html', str=str, li=li[1], haha=li[2])
 
 
+@app.route('/remove', methods=['POST', 'GET'])
+def admin_remove():
+    del_title = request.json
+    del_title2 = str(del_title)
+    print(del_title2)
+    session.query(User.id).filter(User.username == del_title2).delete()
+    session.commit()
+    session.flush()
+    redirect('admin_login')
+
+    return 'Successful'
+
+
 @app.route('/ad')
 def upload_test():
     return render_template('prac/prac2.html')
@@ -57,8 +69,10 @@ def upload_test():
 def load_data():
     return jsonify(result=loadsource[0][1])
 
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+
 
 @app.route('/debug_tmplate')
 def debug_template():
@@ -88,14 +102,28 @@ def post():
     session.flush()
     return redirect('homepage')
 
-@app.route('/')
-def login2():
-    return render_template('/login.html')
-
 
 @app.route('/logout')
 def logout():
     return render_template('/login.html')
+
+
+@app.route('/admin_login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST' and 'login' in request.form and 'password' in request.form:
+        username = request.form.get('login')
+        password = request.form.get('password')
+        if session.query(Admin_User).filter(Admin_User.username == username).all() and session.query(Admin_User).filter(Admin_User.password == password).all():
+            return render_template('prac/admin.html', userID=username)
+        else:
+            print('itisbad')
+            return redirect('/')
+
+
+@app.route('/admin_data', methods=['GET', 'POST'])
+def admin_data():
+    resource2 = session.query(User.username, User.password).all()
+    return json.dumps(resource2)
 
 
 @app.route('/logindas', methods=['GET', 'POST'])
@@ -104,6 +132,7 @@ def login():
         username = request.form.get('login')
         password = request.form.get('password')
         if session.query(User).filter(User.username == username).all() and session.query(User).filter(User.password == password).all():
+
             return render_template('prac/Bootstrap.html', userID=username)
         else:
             return redirect('/')
@@ -181,10 +210,10 @@ def data_deliver():
     return json.dumps(resource)
 
 
-
 @app.route('/bootstrap')
 def bootstrap():
     return render_template('prac/Bootstrap.html')
+
 
 @app.route('/boot2')
 def bootstrap2():
@@ -194,13 +223,12 @@ def bootstrap2():
 @app.route('/prod_temp')
 def prod_temp(data):
     rec_data = data
-    return rec_data
+    return render_template('/login.html')
+
 
 @app.route('/admin')
 def admin():
-
     return render_template('admin.html')
-
 
 
 @app.route('/register')
@@ -221,6 +249,7 @@ def download(filename):
         if os.path.isfile(os.path.join('upload', filename)):
             return send_from_directory('upload', filename, as_attachment=True)
         pass
+    return render_template('/login.html')
 
 
 # show photo·
@@ -237,6 +266,7 @@ def show_photo(filename):
             return response
     else:
         pass
+    return render_template('/login.html')
 
 
 if __name__ == '__main__':

@@ -5,7 +5,7 @@ from sqlalchemy import Column, String, Integer
 engine = create_engine('mysql+pymysql://root:994410@localhost:3306/books')
 Base = declarative_base()
 
-class User(Base):
+class Admin_User(Base):
     __tablename__ = 'Admin'
     id = Column(Integer, primary_key=True)
     username = Column(String(64), nullable=False, index=True)
