@@ -246,7 +246,7 @@ def add_numbers():
 @app.route('/download/<string:filename>', methods=['GET'])
 def download(filename):
     if request.method == "GET":
-        if os.path.isfile(os.path.join('upload', filename)):
+        if os.path.isfile(os.path.join('Myflask/upload', filename)):
             return send_from_directory('upload', filename, as_attachment=True)
         pass
     return render_template('/login.html')
